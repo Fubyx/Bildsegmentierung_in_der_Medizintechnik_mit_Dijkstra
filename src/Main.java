@@ -50,6 +50,4 @@ public class Main {
         queue.remove(smallestNode);
         return smallestNode;
     }
-
-
 }
