@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class Node {
     int x, y, weight;
-    int dijkstraValue = 0;
+    int dijkstraValue = Integer.MAX_VALUE;
     Node dijkstraParent = null;
 
 
