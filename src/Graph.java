@@ -3,83 +3,57 @@ import java.util.Arrays;
 
 public class Graph {
     Node startNode, endNode;
+    private final int rangeOfNeighbours = 5;
 
     Node [][] nodes;
-    int columns;
+    int columns, rows;
+    ArrayList<Node> done = new ArrayList<>();
 
-    public void build (int columns, int rows, int [][]picture, int pixel){
+    public void build (int columns, int rows, int [][]picture){
         this.columns = columns;
+        this.rows = rows;
         nodes = new Node[columns][rows];
         for(int i = 0; i < columns; ++i){
             for(int j = 0; j < rows; ++j){
                 nodes[i][j] = new Node(i, j, picture[i][j]);
-            }
-        }
 
-        for(int i = 0; i < columns - 1; ++i){
-            for(int j = 0; j < rows; ++j){
-                nodes[i][j].childEdges = new ArrayList<>();
-                for(int k = 0; k < rows; ++k){
-                    int l;
-                    if(k > j){
-                        l = k - j;
-                    }else{
-                        l = j - k;
-                    }
-                    nodes[i][j].childEdges.add(new Edge(nodes[i][j], nodes[i + 1][k], l));
-                }
             }
         }
 
 
-        startNode = new Node(-1, rows/2, 0);
-        endNode = new Node(columns, rows/2, 0);
+        int startIndex = rows/2;
+        startNode = new Node(-1, startIndex, 0);
+        endNode = new Node(columns, startIndex, 0);
 
-        for(int i = 0; i < rows; ++i){
-            nodes[columns - 1][i].childEdges = new ArrayList<>();
-            nodes[columns - 1][i].childEdges.add(new Edge(nodes[columns - 1][i], endNode, 0));
-            startNode.childEdges = new ArrayList<>();
-            startNode.childEdges.add(new Edge(startNode, nodes[0][i], 0));
-        }
-        buildChildren(0, nodes, startNode);
+        buildChildren(0, startNode);
+        done.clear();
+        done = null;
     }
 
-    public void buildChildren(int x, Node [][]picture, Node start){
+    public void buildChildren(int x, Node start){
         if(x > columns){
+            return;
+        }
+        if(done.contains(start)){
             return;
         }
 
 
         start.childNodes = new ArrayList<>();
-        start.childEdges = new ArrayList<>();
 
-        if(x == columns){
+        if(x == columns) {
             start.childNodes.add(endNode);
             return;
         }
-        start.childNodes.addAll(Arrays.asList(picture[x]));
+
+        start.childNodes.addAll(Arrays.asList(nodes[x]).subList(Math.max(start.y - rangeOfNeighbours, 0), Math.min(start.y + rangeOfNeighbours, rows)));
+
 
         for(int i = 0; i < start.childNodes.size(); ++i){
-            buildChildren(x + 1, picture, start.childNodes.get(i));
+            buildChildren(x + 1, start.childNodes.get(i));
         }
+        done.add(start);
 
-        /*
-        ArrayList<Node> children = new ArrayList<>();
-        for(int i = 0; i < picture[x].length; ++i){
-            int j;
-            if(i > startingPoint){
-                j = i - startingPoint;
-            }else{
-                j = startingPoint - i;
-            }
-            Node n = new Node(x, i, picture[x][i].weight + j);
-            n.setChildNodes(buildChildren(x + 1, picture, startingPoint));
-            children.add(n);
-        }
-        return children;*/
     }
 
-    public void showGraph(){
-        startNode.showNode();
-    }
 }

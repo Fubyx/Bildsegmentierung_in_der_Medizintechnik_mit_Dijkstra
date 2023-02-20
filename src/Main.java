@@ -3,7 +3,7 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        int rows = 10, columns = 10;
+        int rows = 800, columns = 800;
         int [][] picture = new int[columns][rows];
         Random rand = new Random();
         for(int i = 0; i < columns; ++i){
@@ -12,25 +12,32 @@ public class Main {
             }
         }
 
-        for(int i = 0; i < 10; ++i){
-            for(int j = 0; j < 10; ++j){
-                System.out.print(picture[i][j] + "\t");
+        /* Darstellen des Arrays
+        for(int i = 0; i < rows; ++i){
+            for(int j = 0; j < columns; ++j){
+                System.out.print(picture[j][i] + "\t");
             }
             System.out.println("");
-        }
-        //Code für Einlesen von Bild
+        }//*/
 
+        //long time = System.currentTimeMillis();
         Graph g = new Graph();
-        g.build(columns, rows, picture, 5);
+        g.build(columns, rows, picture);
 
-        //g.showGraph();
+        //System.out.println("Building: " +(System.currentTimeMillis() - time));
+        //time = System.currentTimeMillis();
 
         System.out.println("\n");
-        Node []nodes = dijkstra(g.startNode, g.nodes[9][5], 10);
+        Node []nodes = dijkstra(g.startNode, g.endNode, columns);
+        //System.out.println("Dijkstra: " + (System.currentTimeMillis() - time));
 
+
+        /*Anzeigen des Ergebnisses
         for(int i = 0; i < nodes.length; ++i){
-            System.out.println(nodes[i].weight);
+            if(nodes[i] != null)
+                System.out.println(nodes[i].weight );
         }
+         */
 
     }
 
@@ -41,26 +48,29 @@ public class Main {
         source.dijkstraValue = 0;
         while(dijkstraQueue.size() > 0){
             currentNode = getSmallestInQueue(dijkstraQueue);
-            for(Edge e: currentNode.childEdges){
-                if(e.neighbor.dijkstraValue > currentNode.dijkstraValue + e.weight){
-                    e.neighbor.dijkstraValue = currentNode.dijkstraValue + e.weight;
-                    e.neighbor.dijkstraParent = currentNode;
-                }else if(e.neighbor.dijkstraParent == null){
-                    e.neighbor.dijkstraParent = currentNode;
-                }
-                e.neighbor.dijkstraParent = currentNode;
-                if(!dijkstraQueue.contains(e.neighbor)){
-                    dijkstraQueue.add(e.neighbor);
+
+            if(currentNode.childNodes == null){
+                continue;
+            }
+            for(Node n : currentNode.childNodes){
+                int dist = currentNode.dijkstraValue + n.weight + Math.abs(currentNode.y - n.y);
+                if(dijkstraQueue.contains(n) && n.dijkstraValue > dist){
+                    n.dijkstraValue = dist;
+                    n.dijkstraParent = currentNode;
+                }else if(n.dijkstraParent == null){
+                    n.dijkstraValue = dist;
+                    n.dijkstraParent = currentNode;
+                    dijkstraQueue.add(n);
                 }
             }
-
         }
 
         Node [] retVals = new Node[pixelWidthAmount];
-        currentNode = target;
+        currentNode = target.dijkstraParent;
         int i = pixelWidthAmount - 1;
         while (i >= 0){
-            System.out.println(i);
+            if(currentNode == null)
+                break;
             retVals[i] = currentNode;
             currentNode = currentNode.dijkstraParent;
             --i;
